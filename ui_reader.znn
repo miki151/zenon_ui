@@ -9,6 +9,19 @@ bool round_brackets(pretty_dummy_struct<T>) {
   return true;
 }
 
+export list_ui!string read_data(input_stream mutable* stream, pretty_dummy_struct<list_ui>) {
+  mutable ret = list_ui(try stream^.read_data<list_ui_type>(), vector<box<UIElement>>(), 1000000);
+  try stream^.expect("\{");
+  while (true) {
+    if (stream^.expect("\}"))
+      break;
+    if (stream^.expect("stretch"))
+      ret.stretch_elem = ret.elems.size();
+    ret.elems.push_back(try stream^.read_data<box<UIElement>>());
+  }
+  return move(ret);
+}
+
 export void register_ui_elems(input_stream mutable* stream) {
   stream->add_concept_mapping<UIElement, margins>();
   stream->add_concept_mapping<UIElement, fill>();

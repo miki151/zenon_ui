@@ -1,5 +1,6 @@
 
 export import "vec2.znn";
+export import "std/enum_set.znn";
 
 export enum key_type {
   UP,
@@ -9,13 +10,20 @@ export enum key_type {
   ESCAPE,
   SPACE,
   ENTER,
+  HOME,
+  END,
+  BACKSPACE,
+  DELETE,
+  PAGE_UP,
+  PAGE_DOWN,
   F1,
   A,
   W,
   S,
   D,
   B,
-  Y
+  Y,
+  N
 };
 
 export enum key_event_type {
@@ -24,11 +32,20 @@ export enum key_event_type {
   HELD,
 };
 
-export [@auto_equality]
-struct key_event {
+export enum key_event_modifier {
+  LCTRL
+};
+
+export struct key_event {
   key_type key;
   key_event_type type;
+  enum_set<key_event_modifier> modifiers;
 };
+
+export bool covers(key_event* required, key_event* generated) {
+  return required->key == generated->key && required->type == generated->type && 
+      required->modifiers.is_subset_of(&generated->modifiers);
+}
 
 export enum mouse_event_type {
   LEFT,

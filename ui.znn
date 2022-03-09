@@ -28,6 +28,7 @@ export concept<T> UIElement {
   vec2 size(T*, UIContext);
   bool onKeyEvent(T*, UIContext, rectangle*, key_event*);
   bool onMouseEvent(T*, UIContext, rectangle*, mouse_event*);
+  bool onTextEvent(T*, UIContext, rectangle*, string);
   void destruct(T*);
 };
 
@@ -54,6 +55,11 @@ bool onKeyEvent(T*, UIContext, rectangle*, key_event*) {
 
 export template <T> requires has_attribute<T, @ui_element>
 bool onMouseEvent(T*, UIContext, rectangle*, mouse_event*) {
+  return false;
+}
+
+export template <T> requires has_attribute<T, @ui_element>
+bool onTextEvent(T*, UIContext, rectangle*, string) {
   return false;
 }
 
@@ -93,7 +99,19 @@ bool onKeyEvent(T* t, mutable UIContext context, rectangle* r, key_event* key) {
     context.data = *data;
     const elems = t^.get_elems();
     for (index = elems.size() - 1; index >= 0; --index)
-      if (elems[index]^.onKeyEvent(context, r, key))
+      if (elems[index]^.onKeyEvent(context, &t^.get_bounds(index, context, r), key))
+        return true;
+  }
+  return false;
+}
+
+export template <T> requires container_ui<T>
+bool onTextEvent(T* t, mutable UIContext context, rectangle* r, string text) {
+  if (const data = t^.transform_data(context.data)) {
+    context.data = *data;
+    const elems = t^.get_elems();
+    for (index = elems.size() - 1; index >= 0; --index)
+      if (elems[index]^.onTextEvent(context, &t^.get_bounds(index, context, r), text))
         return true;
   }
   return false;
@@ -257,30 +275,69 @@ export enum list_ui_type {
   VERTICAL,
 };
 
-export [@ui_element]
-struct list_ui {
+export struct list_ui {
   list_ui_type type;
   vector<box<UIElement>> elems;
+  int stretch_elem;
 };
+
+export box<UIElement>[] get_elems(list_ui* l) {
+  return l^.elems.slice();
+}
+
+export rectangle get_bounds(list_ui* l, int ind, UIContext context, rectangle* r) {
+  const positions = l->getElemPositions(context, r);
+  return positions[ind].copy();
+}
 
 vector<rectangle> getElemPositions(list_ui* t, UIContext context, rectangle* r) {
   mutable ret = vector<rectangle>();
   mutable start = 0;
-  for (it : t^.elems)
+  for (i : range(0, min(t->stretch_elem, t->elems.size())))
     switch (t^.type) {
       case (VERTICAL) {
-        const height = it^^.size(context).y;
+        const height = t->elems[i]->size(context).y;
         ret.push_back(rectangle(vec2(r^.left(), r^.top() + start),
             vec2(r^.right(), r^.top() + start + height)));
         start += height;
       }
       case (HORIZONTAL) {
-        const width = it^^.size(context).x;
+        const width = t->elems[i]->size(context).x;
         ret.push_back(rectangle(vec2(r^.left() + start, r^.top()),
             vec2(r^.left() + start + width, r^.bottom())));
         start += width;
       }
     }
+  mutable backPositions = vector<rectangle>();
+  mutable end = 0;
+  for (i = t->elems.size() - 1; i > t->stretch_elem; --i)
+    switch (t^.type) {
+      case (VERTICAL) {
+        const height = t->elems[i]^.size(context).y;
+        backPositions.push_back(rectangle(vec2(r^.left(), r^.bottom() - end - height),
+            vec2(r^.right(), r^.bottom() - end)));
+        end -= height;
+      }
+      case (HORIZONTAL) {
+        const width = t->elems[i]^.size(context).x;
+        backPositions.push_back(rectangle(vec2(r^.right() - end - width, r^.top()),
+            vec2(r^.right() -end, r^.bottom())));
+        end -= width;
+      }
+    }
+  if (t->stretch_elem < t->elems.size())
+    switch (t^.type) {
+      case (VERTICAL) {
+        ret.push_back(rectangle(vec2(r^.left(), r^.top() + start),
+            vec2(r^.right(), r^.bottom() - end)));
+      }
+      case (HORIZONTAL) {
+        ret.push_back(rectangle(vec2(r^.left() + start, r^.top()),
+            vec2(r^.right() - end, r^.bottom())));
+      }
+    }
+  while (!backPositions.empty())
+    ret.push_back(backPositions.pop_back());
   return move(ret);
 }
 
@@ -378,12 +435,16 @@ struct key_handler {
   key_event? event;
 };
 
+export bool onTextEvent(key_handler* k, UIContext context, rectangle* rect, string) {
+  return !k^.event;
+}
+
 export bool onKeyEvent(key_handler* k, UIContext context, rectangle* rect, key_event* event) {
-  if (!k^.event || *event == *k^.event)
-    if (const callback = context.data^.cast_to<box<UICallback>>()) {
+  if (!k^.event || k^.event^.covers(event)) {
+    if (const callback = context.data^.cast_to<box<UICallback>>())
       callback^^^.invoke();
-      return true;
-    }
+    return true;
+  }
   return false;
 }
 
