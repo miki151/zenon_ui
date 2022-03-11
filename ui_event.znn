@@ -16,14 +16,22 @@ export enum key_type {
   DELETE,
   PAGE_UP,
   PAGE_DOWN,
+  TAB,
   F1,
+  LCTRL,
   A,
-  W,
-  S,
-  D,
   B,
+  C,
+  D,
+  E,
+  N,
+  S,
+  U,
+  V,
+  W,
+  X,
   Y,
-  N
+  Z
 };
 
 export enum key_event_type {
@@ -33,7 +41,8 @@ export enum key_event_type {
 };
 
 export enum key_event_modifier {
-  LCTRL
+  LCTRL,
+  LSHIFT
 };
 
 export struct key_event {
@@ -51,10 +60,13 @@ export enum mouse_event_type {
   LEFT,
   MIDDLE,
   RIGHT,
+  MOUSE_MOVEMENT,
   JOYSTICK_LEFT,
   JOYSTICK_RIGHT,
   RIGHT_RELEASED,
   LEFT_RELEASED,
+  WHEEL_UP,
+  WHEEL_DOWN
 };
 
 export struct mouse_event {

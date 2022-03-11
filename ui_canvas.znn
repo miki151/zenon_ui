@@ -16,6 +16,8 @@ export concept<T> UICanvas {
   void drawText(T*, vec2, string, int, color*);
   void drawRotatedText(T*, vec2, string, int, color*, double angle);
   vec2 getTextSize(T*, string, int);
+  void setClipboard(T*, string);
+  string getClipboard(T*);
 };
 
 export enum ui_text_flag {

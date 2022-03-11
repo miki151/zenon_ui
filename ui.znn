@@ -89,7 +89,8 @@ vec2 size(T* t, mutable UIContext context) {
       ret.y = max(ret.y, sz.y);
     }
     return ret;
-  }
+  } else if (data.get_error().empty())
+    return vec2(0, 0);
   return vec2(100, 50);
 }
 
@@ -316,13 +317,13 @@ vector<rectangle> getElemPositions(list_ui* t, UIContext context, rectangle* r) 
         const height = t->elems[i]^.size(context).y;
         backPositions.push_back(rectangle(vec2(r^.left(), r^.bottom() - end - height),
             vec2(r^.right(), r^.bottom() - end)));
-        end -= height;
+        end += height;
       }
       case (HORIZONTAL) {
         const width = t->elems[i]^.size(context).x;
         backPositions.push_back(rectangle(vec2(r^.right() - end - width, r^.top()),
             vec2(r^.right() -end, r^.bottom())));
-        end -= width;
+        end += width;
       }
     }
   if (t->stretch_elem < t->elems.size())
@@ -356,22 +357,37 @@ export void render(list_ui* t, UIContext context, rectangle* r) {
     it^^.render(context, &positions[it.index]);
 }
 
-export vec2 size(list_ui* t, UIContext context) {
-  mutable ret = vec2(0, 0);
-  for (it : t^.elems) {
-    const sz = it^^.size(context);
-    switch (t^.type) {
-      case (VERTICAL) {
-        ret.y += sz.y;
-        ret.x = max(ret.x, sz.x);
-      }
-      case (HORIZONTAL) {
-        ret.x += sz.x;
-        ret.y = max(ret.y, sz.y);
-      }
+export [@ui_element]
+struct dyn_list_ui {
+  box<UIElement> elem;
+};
+
+export void render(dyn_list_ui* ui, mutable UIContext context, rectangle* r) {
+  mutable start = r->v1.y;
+  if (const list = context.data^.cast_to<vector<box<any>>>()) {
+    for (dataElem : **list) {
+      context.data = dataElem^.get();
+      const height = ui->elem->size(context).y;
+      ui->elem->render(context, &rectangle(vec2(r->v1.x, start), vec2(r->v2.x, start + height)));
+      start += height;
     }
-  }
-  return ret;
+  } else
+    context.canvas^.drawText(r^.v1,
+        "dyn list got {context.data^.get_type()}", 20, &color(255, 0, 0));
+}
+
+export vec2 size(dyn_list_ui* ui, mutable UIContext context) {
+  if (const list = context.data^.cast_to<vector<box<any>>>()) {
+    mutable ret = vec2(0, 0);
+    for (dataElem : **list) {
+      context.data = dataElem^.get();
+      const size = ui->elem->size(context);
+      ret.y += size.y;
+      ret.x = max(ret.x, size.x);
+    }
+    return move(ret);
+  } else
+    return vec2(200, 20);
 }
 
 export struct using_ui {

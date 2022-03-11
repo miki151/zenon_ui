@@ -30,7 +30,8 @@ export void register_ui_elems(input_stream mutable* stream) {
   stream->add_concept_mapping<UIElement, colored_text_ui>("colored_text");
   stream->add_concept_mapping<UIElement, texture>();
   stream->add_concept_mapping<UIElement, position>();
-  stream->add_concept_mapping<UIElement, list_ui>("list");
+  stream->add_concept_mapping<UIElement, list_ui>("static_list");
+  stream->add_concept_mapping<UIElement, dyn_list_ui>("list");
   stream->add_concept_mapping<UIElement, button>();
   stream->add_concept_mapping<UIElement, key_handler>();
   stream->add_concept_mapping<UIElement, frame>();
