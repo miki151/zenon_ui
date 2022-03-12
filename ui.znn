@@ -491,3 +491,13 @@ export void render(horizontal_bar_ui* t, UIContext context, rectangle* r) {
   }
 }
 
+export [@ui_element]
+struct text_handler {
+};
+
+export bool onTextEvent(text_handler* t, UIContext context, rectangle* r, string text) {
+  if (const callback = context.data^.cast_to<box<UITextCallback>>())
+    callback^^^.invoke(text);
+  return true;
+}
+

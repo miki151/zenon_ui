@@ -8,5 +8,10 @@ export concept <Fun> UICallback {
   void destruct(Fun*);
 };
 
+export concept <Fun> UITextCallback {
+  void invoke(Fun*, string);
+  void destruct(Fun*);
+};
+
 using UIRecord = hash_map<string, box<any>>;
 
