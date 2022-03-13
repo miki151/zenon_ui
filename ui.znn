@@ -342,6 +342,24 @@ vector<rectangle> getElemPositions(list_ui* t, UIContext context, rectangle* r) 
   return move(ret);
 }
 
+export vec2 size(list_ui* t, mutable UIContext context) {
+  mutable ret = vec2(0, 0);
+  for (elem : t^.elems) {
+    const size = elem^^.size(context);
+    switch (t^.type) {
+      case (VERTICAL) {
+        ret.x = max(ret.x, size.x);
+        ret.y += size.y;
+      }
+      case (HORIZONTAL) {
+        ret.x += size.x;
+        ret.y = max(ret.y, size.y);
+      }
+    }
+  }
+  return move(ret);
+}
+
 export bool onMouseEvent(list_ui* c, UIContext context, rectangle* rect,
     mouse_event* event) {
   const positions = getElemPositions(c, context, rect);
@@ -497,7 +515,15 @@ struct text_handler {
 
 export bool onTextEvent(text_handler* t, UIContext context, rectangle* r, string text) {
   if (const callback = context.data^.cast_to<box<UITextCallback>>())
-    callback^^^.invoke(text);
+    callback^^^.invoke(TextCallbackParam::text(move(text)));
   return true;
 }
 
+export bool onKeyEvent(text_handler* t, UIContext context, rectangle* r, key_event* event) {
+  if (event->key == key_type::BACKSPACE && event->type == key_event_type::DOWN) {
+    if (const callback = context.data^.cast_to<box<UITextCallback>>())
+      callback^^^.invoke(TextCallbackParam::backspace());
+    return true;
+  }
+  return false;
+}

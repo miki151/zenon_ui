@@ -8,8 +8,13 @@ export concept <Fun> UICallback {
   void destruct(Fun*);
 };
 
+export union TextCallbackParam {
+  string text;
+  void backspace;
+};
+
 export concept <Fun> UITextCallback {
-  void invoke(Fun*, string);
+  void invoke(Fun*, TextCallbackParam);
   void destruct(Fun*);
 };
 
