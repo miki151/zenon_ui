@@ -55,7 +55,8 @@ export enum key_event_type {
 
 export enum key_event_modifier {
   LCTRL,
-  LSHIFT
+  LSHIFT,
+  LALT
 };
 
 export struct key_event {

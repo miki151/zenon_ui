@@ -388,6 +388,8 @@ export void render(dyn_list_ui* ui, mutable UIContext context, rectangle* r) {
       const height = ui->elem->size(context).y;
       ui->elem->render(context, &rectangle(vec2(r->v1.x, start), vec2(r->v2.x, start + height)));
       start += height;
+      if (start >= r->v2.y)
+        break;
     }
   } else
     context.canvas^.drawText(r^.v1,
@@ -462,6 +464,42 @@ export rectangle get_bounds(height_ui* c, int, UIContext, rectangle* r) {
 
 export vec2 size(height_ui* t, UIContext context) {
   return vec2(t^.elem^.size(context).x, t^.height);
+}
+
+export struct max_width_ui {
+  int width;
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(max_width_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(max_width_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export vec2 size(max_width_ui* t, UIContext context) {
+  const size = t^.elem^.size(context);
+  return vec2(min(size.x, t^.width), size.y);
+}
+
+export struct max_height_ui {
+  int height;
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(max_height_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(max_height_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export vec2 size(max_height_ui* t, UIContext context) {
+  const size = t^.elem^.size(context);
+  return vec2(size.x, min(t^.height, size.y));
 }
 
 export [@ui_element]
