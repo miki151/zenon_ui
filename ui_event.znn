@@ -18,6 +18,9 @@ export enum key_type {
   PAGE_DOWN,
   TAB,
   F1,
+  F2,
+  F3,
+  F4,
   LCTRL,
   A,
   B,
@@ -44,7 +47,7 @@ export enum key_type {
   W,
   X,
   Y,
-  Z
+  Z,
 };
 
 export enum key_event_type {
