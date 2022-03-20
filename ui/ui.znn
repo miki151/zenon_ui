@@ -4,14 +4,14 @@ export import "std/vector.znn";
 export import "vec2.znn";
 export import "rectangle.znn";
 export import "color.znn";
-export import "ui_canvas.znn";
-export import "ui_event.znn";
-import "ui_data.znn";
+export import "canvas.znn";
+export import "event.znn";
+import "data.znn";
 export import "std/math.znn";
 export import "std/any.znn";
 export import "std/io.znn";
 export import "std/box.znn";
-export import "ui_state.znn";
+export import "state.znn";
 export import "rectangle_placement.znn";
 
 export struct UIContext {
