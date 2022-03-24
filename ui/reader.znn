@@ -42,6 +42,8 @@ export void register_ui_elems(input_stream mutable* stream) {
   stream->add_concept_mapping<UIElement, height_ui>("height");
   stream->add_concept_mapping<UIElement, max_width_ui>("max_width");
   stream->add_concept_mapping<UIElement, max_height_ui>("max_height");
+  stream->add_concept_mapping<UIElement, min_width_ui>("min_width");
+  stream->add_concept_mapping<UIElement, min_height_ui>("min_height");
   stream->add_concept_mapping<UIElement, consume_events>();
   stream->add_concept_mapping<UIElement, horizontal_bar_ui>("horibar");
   stream->add_concept_mapping<UIElement, chain>("\{", true);

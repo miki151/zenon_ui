@@ -502,6 +502,42 @@ export vec2 size(max_height_ui* t, UIContext context) {
   return vec2(size.x, min(t^.height, size.y));
 }
 
+export struct min_width_ui {
+  int width;
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(min_width_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(min_width_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export vec2 size(min_width_ui* t, UIContext context) {
+  const size = t^.elem^.size(context);
+  return vec2(max(size.x, t^.width), size.y);
+}
+
+export struct min_height_ui {
+  int height;
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(min_height_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(min_height_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export vec2 size(min_height_ui* t, UIContext context) {
+  const size = t^.elem^.size(context);
+  return vec2(size.x, max(t^.height, size.y));
+}
+
 export [@ui_element]
 struct key_handler {
   key_event? event;
