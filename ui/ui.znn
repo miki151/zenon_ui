@@ -432,6 +432,28 @@ export any*!string transform_data(using_ui* u, any* a) {
     return "Bad UI data: not a record: {a^.get_type()}";
 }
 
+export struct if_ui {
+  string key;
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(if_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(if_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export any*!string transform_data(if_ui* u, any* a) {
+  if (const r = a^.cast_to<UIRecord>()) {
+    if (const res = r^^.get_maybe(&u^.key))
+      return a;
+    return "";
+  } else
+    return "Bad UI data: not a record: {a^.get_type()}";
+}
+
 export struct width_ui {
   int width;
   box<UIElement> elem;
