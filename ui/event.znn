@@ -69,8 +69,8 @@ export struct key_event {
 };
 
 export bool covers(key_event* required, key_event* generated) {
-  return required->key == generated->key && required->type == generated->type && 
-      required->modifiers.is_subset_of(&generated->modifiers);
+  return required^.key == generated^.key && required^.type == generated^.type && 
+      required^.modifiers.is_subset_of(&generated^.modifiers);
 }
 
 export enum mouse_event_type {

@@ -24,29 +24,29 @@ export list_ui!string read_data(input_stream mutable* stream, pretty_dummy_struc
 }
 
 export void register_ui_elems(input_stream mutable* stream) {
-  stream->add_concept_mapping<UIElement, margins>();
-  stream->add_concept_mapping<UIElement, fill>();
-  stream->add_concept_mapping<UIElement, label>();
-  stream->add_concept_mapping<UIElement, text_ui>("text");
-  stream->add_concept_mapping<UIElement, text_handler>("text_handler");
-  stream->add_concept_mapping<UIElement, colored_text_ui>("colored_text");
-  stream->add_concept_mapping<UIElement, texture>();
-  stream->add_concept_mapping<UIElement, position>();
-  stream->add_concept_mapping<UIElement, list_ui>("static_list");
-  stream->add_concept_mapping<UIElement, dyn_list_ui>("list");
-  stream->add_concept_mapping<UIElement, button>();
-  stream->add_concept_mapping<UIElement, key_handler>();
-  stream->add_concept_mapping<UIElement, frame>();
-  stream->add_concept_mapping<UIElement, using_ui>("using");
-  stream->add_concept_mapping<UIElement, if_ui>("if");
-  stream->add_concept_mapping<UIElement, width_ui>("width");
-  stream->add_concept_mapping<UIElement, height_ui>("height");
-  stream->add_concept_mapping<UIElement, max_width_ui>("max_width");
-  stream->add_concept_mapping<UIElement, max_height_ui>("max_height");
-  stream->add_concept_mapping<UIElement, min_width_ui>("min_width");
-  stream->add_concept_mapping<UIElement, min_height_ui>("min_height");
-  stream->add_concept_mapping<UIElement, consume_events>();
-  stream->add_concept_mapping<UIElement, horizontal_bar_ui>("horibar");
-  stream->add_concept_mapping<UIElement, chain>("\{", true);
+  stream^.add_concept_mapping<UIElement, margins>();
+  stream^.add_concept_mapping<UIElement, fill>();
+  stream^.add_concept_mapping<UIElement, label>();
+  stream^.add_concept_mapping<UIElement, text_ui>("text");
+  stream^.add_concept_mapping<UIElement, text_handler>("text_handler");
+  stream^.add_concept_mapping<UIElement, colored_text_ui>("colored_text");
+  stream^.add_concept_mapping<UIElement, texture>();
+  stream^.add_concept_mapping<UIElement, position>();
+  stream^.add_concept_mapping<UIElement, list_ui>("static_list");
+  stream^.add_concept_mapping<UIElement, dyn_list_ui>("list");
+  stream^.add_concept_mapping<UIElement, button>();
+  stream^.add_concept_mapping<UIElement, key_handler>();
+  stream^.add_concept_mapping<UIElement, frame>();
+  stream^.add_concept_mapping<UIElement, using_ui>("using");
+  stream^.add_concept_mapping<UIElement, if_ui>("if");
+  stream^.add_concept_mapping<UIElement, width_ui>("width");
+  stream^.add_concept_mapping<UIElement, height_ui>("height");
+  stream^.add_concept_mapping<UIElement, max_width_ui>("max_width");
+  stream^.add_concept_mapping<UIElement, max_height_ui>("max_height");
+  stream^.add_concept_mapping<UIElement, min_width_ui>("min_width");
+  stream^.add_concept_mapping<UIElement, min_height_ui>("min_height");
+  stream^.add_concept_mapping<UIElement, consume_events>();
+  stream^.add_concept_mapping<UIElement, horizontal_bar_ui>("horibar");
+  stream^.add_concept_mapping<UIElement, chain>("\{", true);
 }
 

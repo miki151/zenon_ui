@@ -133,11 +133,10 @@ bool onMouseEvent(T* t, mutable UIContext context, rectangle* r, mouse_event* m)
 export [@ui_element]
 struct texture {
   string id;
-  texture_flip flip;
 };
 
 export void render(texture* t, UIContext context, rectangle* r) {
-  context.canvas^.drawTexture(r, t^.id, texture_flip::NONE);
+  context.canvas^.drawTexture(r, t^.id);
 }
 
 export vec2 size(texture* t, UIContext context) {
@@ -287,23 +286,23 @@ export box<UIElement>[] get_elems(list_ui* l) {
 }
 
 export rectangle get_bounds(list_ui* l, int ind, UIContext context, rectangle* r) {
-  const positions = l->getElemPositions(context, r);
+  const positions = l^.getElemPositions(context, r);
   return positions[ind].copy();
 }
 
 vector<rectangle> getElemPositions(list_ui* t, UIContext context, rectangle* r) {
   mutable ret = vector<rectangle>();
   mutable start = 0;
-  for (i : range(0, min(t->stretch_elem, t->elems.size())))
+  for (i : range(0, min(t^.stretch_elem, t^.elems.size())))
     switch (t^.type) {
       case (VERTICAL) {
-        const height = t->elems[i]->size(context).y;
+        const height = t^.elems[i]^.size(context).y;
         ret.push_back(rectangle(vec2(r^.left(), r^.top() + start),
             vec2(r^.right(), r^.top() + start + height)));
         start += height;
       }
       case (HORIZONTAL) {
-        const width = t->elems[i]->size(context).x;
+        const width = t^.elems[i]^.size(context).x;
         ret.push_back(rectangle(vec2(r^.left() + start, r^.top()),
             vec2(r^.left() + start + width, r^.bottom())));
         start += width;
@@ -311,22 +310,22 @@ vector<rectangle> getElemPositions(list_ui* t, UIContext context, rectangle* r) 
     }
   mutable backPositions = vector<rectangle>();
   mutable end = 0;
-  for (i = t->elems.size() - 1; i > t->stretch_elem; --i)
+  for (i = t^.elems.size() - 1; i > t^.stretch_elem; --i)
     switch (t^.type) {
       case (VERTICAL) {
-        const height = t->elems[i]^.size(context).y;
+        const height = t^.elems[i]^.size(context).y;
         backPositions.push_back(rectangle(vec2(r^.left(), r^.bottom() - end - height),
             vec2(r^.right(), r^.bottom() - end)));
         end += height;
       }
       case (HORIZONTAL) {
-        const width = t->elems[i]^.size(context).x;
+        const width = t^.elems[i]^.size(context).x;
         backPositions.push_back(rectangle(vec2(r^.right() - end - width, r^.top()),
             vec2(r^.right() -end, r^.bottom())));
         end += width;
       }
     }
-  if (t->stretch_elem < t->elems.size())
+  if (t^.stretch_elem < t^.elems.size())
     switch (t^.type) {
       case (VERTICAL) {
         ret.push_back(rectangle(vec2(r^.left(), r^.top() + start),
@@ -381,14 +380,14 @@ struct dyn_list_ui {
 };
 
 export void render(dyn_list_ui* ui, mutable UIContext context, rectangle* r) {
-  mutable start = r->v1.y;
+  mutable start = r^.v1.y;
   if (const list = context.data^.cast_to<vector<box<any>>>()) {
     for (dataElem : **list) {
       context.data = dataElem^.get();
-      const height = ui->elem->size(context).y;
-      ui->elem->render(context, &rectangle(vec2(r->v1.x, start), vec2(r->v2.x, start + height)));
+      const height = ui^.elem^.size(context).y;
+      ui^.elem^.render(context, &rectangle(vec2(r^.v1.x, start), vec2(r^.v2.x, start + height)));
       start += height;
-      if (start >= r->v2.y)
+      if (start >= r^.v2.y)
         break;
     }
   } else
@@ -401,7 +400,7 @@ export vec2 size(dyn_list_ui* ui, mutable UIContext context) {
     mutable ret = vec2(0, 0);
     for (dataElem : **list) {
       context.data = dataElem^.get();
-      const size = ui->elem->size(context);
+      const size = ui^.elem^.size(context);
       ret.y += size.y;
       ret.x = max(ret.x, size.x);
     }
@@ -616,7 +615,7 @@ export bool onTextEvent(text_handler* t, UIContext context, rectangle* r, string
 }
 
 export bool onKeyEvent(text_handler* t, UIContext context, rectangle* r, key_event* event) {
-  if (event->key == key_type::BACKSPACE && event->type == key_event_type::DOWN) {
+  if (event^.key == key_type::BACKSPACE && event^.type == key_event_type::DOWN) {
     if (const callback = context.data^.cast_to<box<UITextCallback>>())
       callback^^^.invoke(TextCallbackParam::backspace());
     return true;

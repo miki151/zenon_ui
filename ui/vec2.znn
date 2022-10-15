@@ -121,3 +121,7 @@ export vec2d from_polar(double angle, double length) {
 export vec2d rotate(vec2d* v, double angle) {
   return from_polar(v^.get_angle() + angle, v^.length_d());
 }
+
+export int get_hash(vec2* v) {
+  return v^.x * 1000 + v^.y;
+}

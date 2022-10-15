@@ -1,18 +1,20 @@
 
 export import "std/box.znn";
 export import "std/any.znn";
+export import "std/hash_map.znn";
 
 export struct UIState {
-  box<any>? state;
+  hash_map<string, box<any>> state;
 };
 
 export UIState() {
-  return UIState::UIState(null);
+  return UIState::UIState(hash_map<string, box<any>>());
 }
 
 export template <T> requires construct<T>
 T mutable* get_state(UIState mutable* s) {
-  if (!s^.state)
-    s^.state = T().box_as<any>();
-  return *s^.state^^.cast_to<T>();
+  const key = to_string(T);
+  if (!s^.state.contains(&key))
+    s^.state.insert(key, T().box_as<any>());
+  return *s^.state.get(&key)^^.cast_to<T>();
 }
