@@ -48,6 +48,8 @@ export enum key_type {
   X,
   Y,
   Z,
+  UNDERSCORE,
+  SLASH,
 };
 
 export enum key_event_type {
