@@ -132,15 +132,27 @@ bool onMouseEvent(T* t, mutable UIContext context, rectangle* r, mouse_event* m)
 
 export [@ui_element]
 struct texture {
-  string id;
+  string? id;
 };
 
 export void render(texture* t, UIContext context, rectangle* r) {
-  context.canvas^.drawTexture(r, t^.id);
+  if (!!t^.id)
+    return context.canvas^.drawTexture(r, *t^.id, &color(255, 255, 255));
+  if (const rec = context.data^.cast_to<UIRecord>())
+    if (const col = rec^^.get_maybe(&"color"))
+      if (const id = rec^^.get_maybe(&"id"))
+        return context.canvas^.drawTexture(r, **id^^^.cast_to<string>(), *col^^^.cast_to<color>());
+  context.canvas^.drawText(r^.v1,
+      "dyn texture got {context.data^.get_type()}", 20, &color(255, 0, 0));
 }
 
 export vec2 size(texture* t, UIContext context) {
-  return context.canvas^.getTextureSize(t^.id);
+  if (!!t^.id)
+    return context.canvas^.getTextureSize(*t^.id);
+  else if (const rec = context.data^.cast_to<UIRecord>())
+    if (const id = rec^^.get_maybe(&"id"))
+      return context.canvas^.getTextureSize(**id^^^.cast_to<string>());
+  return vec2(200, 20);
 }
 
 export [@ui_element]
