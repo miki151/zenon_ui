@@ -132,7 +132,7 @@ bool onMouseEvent(T* t, mutable UIContext context, rectangle* r, mouse_event* m)
 
 export [@ui_element]
 struct texture {
-  string? id;
+  string? id = null;
 };
 
 export void render(texture* t, UIContext context, rectangle* r) {
@@ -172,7 +172,7 @@ export [@ui_element]
 struct label {
   int size;
   color color;
-  string? text;
+  string? text = null;
 };
 
 export void render(label* t, UIContext context, rectangle* r) {
