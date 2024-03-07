@@ -10,6 +10,7 @@ export enum RectanglePlacement {
   BOTTOM_STRETCHED,
   LEFT_CENTER,
   RIGHT_CENTER,
+  LEFT_STRETCHED,
   BOTTOM_CENTER,
   BOTTOM_LEFT,
   BOTTOM_RIGHT,
@@ -37,6 +38,9 @@ export rectangle get(RectanglePlacement placement, vec2 size, rectangle* bounds)
     case (LEFT_CENTER) { return rectangle(
         vec2(bounds^.left(), bounds^.middle().y - size.y  / 2),
         vec2(bounds^.left() + size.x, bounds^.middle().y + size.y - size.y / 2));
+    }
+    case (LEFT_STRETCHED) { return rectangle(
+        bounds^.v1, vec2(bounds^.left() + size.x, bounds^.bottom()));
     }
     case (RIGHT_CENTER) { return rectangle(
         vec2(bounds^.right() - size.x, bounds^.middle().y - size.y  / 2),

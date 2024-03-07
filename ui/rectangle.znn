@@ -2,17 +2,24 @@
 export import "vec2.znn";
 import "std/range.znn";
 
-export struct rectangle {
+export [@auto_equality]
+struct rectangle {
   vec2 v1;
   vec2 v2;
 };
 
 export rectangle(vec2, vec2) = default;
+
 export rectangle(int px, int py, int kx, int ky) {
   return rectangle(vec2(px, py), vec2(kx, ky));
 }
+
 export rectangle(range xRange, range yRange) {
   return rectangle(vec2(xRange.begin(), yRange.begin()), vec2(xRange.end(), yRange.end()),);
+}
+
+export int get_hash(rectangle* r) {
+  return r^.v1.get_hash() + 12345 * r^.v2.get_hash();
 }
 
 export rectangle centered_rect(vec2 pos, int radius) {

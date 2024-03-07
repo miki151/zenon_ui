@@ -32,10 +32,13 @@ export void register_ui_elems(input_stream mutable* stream) {
   stream^.add_concept_mapping<UIElement, list_ui>("static_list");
   stream^.add_concept_mapping<UIElement, dyn_list_ui>("list");
   stream^.add_concept_mapping<UIElement, button>();
+  stream^.add_concept_mapping<UIElement, continous_button>();
   stream^.add_concept_mapping<UIElement, key_handler>();
   stream^.add_concept_mapping<UIElement, frame>();
   stream^.add_concept_mapping<UIElement, using_ui>("using");
   stream^.add_concept_mapping<UIElement, if_ui>("if");
+  stream^.add_concept_mapping<UIElement, hint_ui>("hint");
+  stream^.add_concept_mapping<UIElement, mouse_over_ui>("mouse_over");
   stream^.add_concept_mapping<UIElement, width_ui>("width");
   stream^.add_concept_mapping<UIElement, height_ui>("height");
   stream^.add_concept_mapping<UIElement, max_width_ui>("max_width");

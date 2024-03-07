@@ -11,6 +11,7 @@ export import "std/math.znn";
 export import "std/any.znn";
 export import "std/io.znn";
 export import "std/box.znn";
+import "std/hash_set.znn";
 export import "state.znn";
 export import "rectangle_placement.znn";
 
@@ -137,11 +138,13 @@ struct texture {
 
 export void render(texture* t, UIContext context, rectangle* r) {
   if (!!t^.id)
-    return context.canvas^.drawTexture(r, *t^.id, &color(255, 255, 255));
+    return context.canvas^.drawTexture(r, null, *t^.id, &color(255, 255, 255));
   if (const rec = context.data^.cast_to<UIRecord>())
     if (const col = rec^^.get_maybe(&"color"))
       if (const id = rec^^.get_maybe(&"id"))
-        return context.canvas^.drawTexture(r, **id^^^.cast_to<string>(), *col^^^.cast_to<color>());
+        return context.canvas^.drawTexture(r, null, **id^^^.cast_to<string>(), *col^^^.cast_to<color>());
+  if (const rec = context.data^.cast_to<string>())
+    return context.canvas^.drawTexture(r, null, **rec, &color(255, 255, 255));
   context.canvas^.drawText(r^.v1,
       "dyn texture got {context.data^.get_type()}", 20, &color(255, 0, 0));
 }
@@ -152,6 +155,8 @@ export vec2 size(texture* t, UIContext context) {
   else if (const rec = context.data^.cast_to<UIRecord>())
     if (const id = rec^^.get_maybe(&"id"))
       return context.canvas^.getTextureSize(**id^^^.cast_to<string>());
+  if (const rec = context.data^.cast_to<string>())
+    return context.canvas^.getTextureSize(**rec);
   return vec2(200, 20);
 }
 
@@ -163,6 +168,35 @@ export bool onMouseEvent(button* b, UIContext context, rectangle* r, mouse_event
   if (event^.type == mouse_event_type::LEFT && r^.contains(&event^.pos))
     if (const callback = context.data^.cast_to<box<UICallback>>()) {
       callback^^^.invoke();
+      return true;
+    }
+  return false;
+}
+
+export [@ui_element]
+struct continous_button {
+};
+
+struct continous_button_state {
+  bool held = false;
+  hash_set<rectangle> clicked = hash_set<rectangle>();
+};
+
+export bool onMouseEvent(continous_button* b, UIContext context, rectangle* r, mouse_event* event) {
+  const state = context.state^.get_state<continous_button_state>();
+  if (event^.type == mouse_event_type::LEFT) {
+    state^.held = true;
+    state^.clicked.clear();
+  }
+  if (event^.type == mouse_event_type::LEFT_RELEASED) {
+    state^.held = false;
+    state^.clicked.clear();
+  }
+  if (r^.contains(&event^.pos) && !state^.clicked.contains(r) && state^.held &&
+      (event^.type == mouse_event_type::MOUSE_MOVEMENT || event^.type == mouse_event_type::LEFT))
+    if (const callback = context.data^.cast_to<box<UICallback>>()) {
+      callback^^^.invoke();
+      state^.clicked.insert(r^.copy());
       return true;
     }
   return false;
@@ -359,19 +393,37 @@ export void render(list_ui* t, UIContext context, rectangle* r) {
 
 export [@ui_element]
 struct dyn_list_ui {
+  list_ui_type type;
   box<UIElement> elem;
 };
 
+export template <T>
+T choose(dyn_list_ui* ui, T elemVert, T elemHor) {
+  return ui^.type == list_ui_type::VERTICAL ? move(elemVert) : move(elemHor);
+}
+
+export vector<rectangle> getElemBounds(dyn_list_ui* ui, vector<box<any>>* list, mutable UIContext context, rectangle* r) {
+  mutable ret = vector<rectangle>();
+  mutable start =  ui^.choose(r^.v1.y, r^.v1.x);
+  for (dataElem : *list) {
+    context.data = dataElem^.get();
+    const height = ui^.choose(ui^.elem^.size(context).y, ui^.elem^.size(context).x);
+    ret.push_back(ui^.choose(
+        rectangle(vec2(r^.v1.x, start), vec2(r^.v2.x, start + height)),
+        rectangle(vec2(start, r^.v1.y), vec2(start + height, r^.v2.y))));
+    start += height;
+    if (start >= ui^.choose(r^.v2.y, r^.v2.x))
+      break;
+  }
+  return move(ret);
+}
+
 export void render(dyn_list_ui* ui, mutable UIContext context, rectangle* r) {
-  mutable start = r^.v1.y;
   if (const list = context.data^.cast_to<vector<box<any>>>()) {
-    for (dataElem : **list) {
-      context.data = dataElem^.get();
-      const height = ui^.elem^.size(context).y;
-      ui^.elem^.render(context, &rectangle(vec2(r^.v1.x, start), vec2(r^.v2.x, start + height)));
-      start += height;
-      if (start >= r^.v2.y)
-        break;
+    for (bounds : ui^.getElemBounds(*list, context, r)) {
+      context.data = list^^[bounds.index].get();
+      const height = ui^.choose(ui^.elem^.size(context).y, ui^.elem^.size(context).x);
+      ui^.elem^.render(context, &*bounds);
     }
   } else
     context.canvas^.drawText(r^.v1,
@@ -384,12 +436,27 @@ export vec2 size(dyn_list_ui* ui, mutable UIContext context) {
     for (dataElem : **list) {
       context.data = dataElem^.get();
       const size = ui^.elem^.size(context);
-      ret.y += size.y;
-      ret.x = max(ret.x, size.x);
+      if (ui^.type == list_ui_type::VERTICAL) {
+        ret.y += size.y;
+        ret.x = max(ret.x, size.x);
+      } else {
+        ret.x += size.x;
+        ret.y = max(ret.y, size.y);
+      }
     }
     return move(ret);
   } else
     return vec2(200, 20);
+}
+
+export bool onMouseEvent(dyn_list_ui* ui, mutable UIContext context, rectangle* r, mouse_event* ev) {
+  mutable ret = false;
+  if (const list = context.data^.cast_to<vector<box<any>>>())
+    for (rect : ui^.getElemBounds(*list, context, r)) {
+      context.data = list^^[rect.index].get();
+      ret = ret || ui^.elem^.onMouseEvent(context, &*rect, ev);
+    }
+  return ret;
 }
 
 export struct using_ui {
@@ -436,6 +503,76 @@ export any*!string transform_data(if_ui* u, any* a) {
     return "Bad UI data: not a record: {a^.get_type()}";
 }
 
+export struct hint_ui {
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(hint_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(hint_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export void render(hint_ui* ui, mutable UIContext context, rectangle* r) {
+  const state = context.state^.get_state<hint_ui_state>();
+  if (state^.selected == *r) {
+    const size = ui^.elem^.size(context);
+    const canvasSize = context.canvas^.getSize();
+    const pos = vec2(min(r^.right(), canvasSize.x - size.x ), min(r^.top(), canvasSize.y - size.y));
+    ui^.elem^.render(context, &rectangle(pos, pos + size));
+  }
+}
+
+struct hint_ui_state {
+  rectangle? selected = null;
+};
+
+export bool onMouseEvent(hint_ui* b, UIContext context, rectangle* r, mouse_event* event) {
+  if (event^.type == mouse_event_type::MOUSE_MOVEMENT) {
+    const state = context.state^.get_state<hint_ui_state>();
+    if (r^.contains(&event^.pos))
+      state^.selected = *r;
+    else if (state^.selected == *r)
+      state^.selected = null;
+  }
+  return false;
+}
+
+export vec2 size(hint_ui*, UIContext context) {
+  return vec2(1, 1);
+}
+
+export struct mouse_over_ui {
+  box<UIElement> elem;
+};
+
+export box<UIElement>[] get_elems(mouse_over_ui* c) {
+  return singleton_slice(&c^.elem);
+}
+
+export rectangle get_bounds(mouse_over_ui* c, int, UIContext, rectangle* r) {
+  return r^.copy();
+}
+
+export void render(mouse_over_ui* ui, mutable UIContext context, rectangle* r) {
+  const state = context.state^.get_state<hint_ui_state>();
+  if (state^.selected == *r)
+    ui^.elem^.render(context, r);
+}
+
+export bool onMouseEvent(mouse_over_ui* b, UIContext context, rectangle* r, mouse_event* event) {
+  if (event^.type == mouse_event_type::MOUSE_MOVEMENT) {
+    const state = context.state^.get_state<hint_ui_state>();
+    if (r^.contains(&event^.pos))
+      state^.selected = *r;
+    else if (state^.selected == *r)
+      state^.selected = null;
+  }
+  return false;
+}
+
 export struct width_ui {
   int width;
   box<UIElement> elem;
@@ -446,7 +583,7 @@ export box<UIElement>[] get_elems(width_ui* c) {
 }
 
 export rectangle get_bounds(width_ui* c, int, UIContext, rectangle* r) {
-  return r^.copy();
+  return rectangle(r^.v1, r^.v1 + vec2(min(c^.width, r^.width()), r^.height()));
 }
 
 export vec2 size(width_ui* t, UIContext context) {
