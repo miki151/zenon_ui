@@ -1,6 +1,9 @@
+export import "std/enum_set.znn";
 
 export import "vec2.znn";
-export import "std/enum_set.znn";
+export import "context.znn";
+import "ui.znn";
+import "data.znn";
 
 export enum key_type {
   UP,
@@ -22,6 +25,16 @@ export enum key_type {
   F3,
   F4,
   LCTRL,
+  KEYPAD_0,
+  KEYPAD_1,
+  KEYPAD_2,
+  KEYPAD_3,
+  KEYPAD_4,
+  KEYPAD_5,
+  KEYPAD_6,
+  KEYPAD_7,
+  KEYPAD_8,
+  KEYPAD_9,
   A,
   B,
   C,
@@ -93,3 +106,34 @@ export struct mouse_event {
   vec2 pos;
 };
 
+export union ui_event {
+  key_event key;
+  mouse_event mouse;
+  void quit;
+  vec2 window_resized;
+  string text_input;
+  void unknown;
+};
+
+export void processEvent(UIElement* ui, UIContext context, rectangle mutable* bounds, ui_event* event) {
+  switch (*event) {
+    case (quit) {
+      if (const r = context.data^.cast_to<UIRecord>())
+        if (const res = r^^.elems.get_maybe(&"exit_callback"))
+          res^^^.cast_to<box<UICallback>>()^^^.invoke();
+    }
+    case (key) {
+      discard ui^.onKeyEvent(context, bounds, &key);
+    }
+    case (mouse) {
+      discard ui^.onMouseEvent(context, bounds, &mouse);
+    }
+    case (text_input) {
+      discard ui^.onTextEvent(context, bounds, text_input);
+    }
+    case (window_resized) {
+      *bounds = rectangle(vec2(0, 0), window_resized);
+    }
+    default {}
+  }
+}

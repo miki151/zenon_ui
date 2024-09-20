@@ -1,0 +1,12 @@
+export import "std/any.znn";
+export import "canvas.znn";
+import "state.znn";
+
+export struct UIContext {
+  UICanvas* canvas;
+  any* data;
+  UIState mutable* state;
+  double timeDiff;
+};
+
+export UIContext implicit_copy(UIContext*) = default;

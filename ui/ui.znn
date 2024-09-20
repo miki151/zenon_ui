@@ -5,24 +5,15 @@ export import "vec2.znn";
 export import "rectangle.znn";
 export import "color.znn";
 export import "canvas.znn";
+export import "context.znn";
 export import "event.znn";
 import "data.znn";
 export import "std/math.znn";
-export import "std/any.znn";
 export import "std/io.znn";
 export import "std/box.znn";
 import "std/hash_set.znn";
 export import "state.znn";
 export import "rectangle_placement.znn";
-
-export struct UIContext {
-  UICanvas* canvas;
-  any* data;
-  UIState mutable* state;
-  double timeDiff;
-};
-
-export UIContext implicit_copy(UIContext*) = default;
 
 export concept<T> UIElement {
   void render(T*, UIContext, rectangle*);

@@ -18,5 +18,28 @@ export concept <Fun> UITextCallback {
   void destruct(Fun*);
 };
 
-using UIRecord = hash_map<string, box<any>>;
+export struct UIRecord {
+  hash_map<string, box<any>> elems = hash_map<string, box<any>>();
+};
 
+export box<any>*? get_maybe(UIRecord* r, string* name) {
+  return r^.elems.get_maybe(name);
+}
+
+export void erase(UIRecord mutable* r, string* name) {
+  r^.elems.erase(name);
+}
+
+export template <Fun> requires invoke<Fun, void>
+void addCallback(UIRecord mutable* r, string name, Fun f) {
+  r^.elems.insert(move(name), move(f).box_as<UICallback>().box_as<any>());
+}
+
+export template <T>
+void add(UIRecord mutable* r, string name, T elem) {
+  r^.elems.insert(move(name), box_as<any>(move(elem)));
+}
+
+export void add(UIRecord mutable* r, string name) {
+  r^.elems.insert(move(name), 1.box_as<any>());
+}
